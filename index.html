@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>La Burger Perfecta — BurgerBot</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --red: #E8281A;
+    --yellow: #F5C518;
+    --dark: #0F0D0B;
+    --darker: #080604;
+    --card: #1A1612;
+    --border: #2A2420;
+    --text: #F0EBE3;
+    --muted: #8A7F75;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--darker);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  header {
+    padding: 28px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--red);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  .logo-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 1px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .badge {
+    background: #1A2A1A;
+    border: 1px solid #2A4A2A;
+    color: #4ADE80;
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+  }
+
+  .badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4ADE80;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Hero */
+  .hero {
+    padding: 60px 0 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+
+  .hero-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    line-height: 0.9;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .hero-title span {
+    color: var(--red);
+  }
+
+  .hero-desc {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 32px;
+    max-width: 380px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 13px 24px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary:hover {
+    background: #C41F13;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 13px 24px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--muted);
+  }
+
+  /* Chat window */
+  .chat-window {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .chat-header {
+    background: var(--dark);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .chat-avatar {
+    width: 36px;
+    height: 36px;
+    background: var(--red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .chat-info { flex: 1; }
+  .chat-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .chat-status { font-size: 11px; color: #4ADE80; }
+
+  .chat-messages {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 260px;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+
+  .msg {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    animation: msgIn 0.3s ease;
+  }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-bot {
+    background: var(--dark);
+    border: 1px solid var(--border);
+    color: var(--text);
+    align-self: flex-start;
+    border-radius: 4px 12px 12px 12px;
+  }
+
+  .msg-user {
+    background: var(--red);
+    color: white;
+    align-self: flex-end;
+    border-radius: 12px 4px 12px 12px;
+  }
+
+  .chat-input-area {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .chat-input {
+    flex: 1;
+    background: var(--dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .chat-input::placeholder { color: var(--muted); }
+  .chat-input:focus { border-color: var(--red); }
+
+  .chat-send {
+    width: 38px;
+    height: 38px;
+    background: var(--red);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .chat-send:hover { background: #C41F13; transform: scale(1.05); }
+  .chat-send svg { width: 16px; height: 16px; fill: white; }
+
+  /* Features */
+  .features {
+    padding: 60px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    margin-bottom: 40px;
+    color: var(--text);
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .feature-card:hover {
+    border-color: var(--red);
+    transform: translateY(-2px);
+  }
+
+  .feature-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  .feature-title {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .feature-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* Menu preview */
+  .menu-section {
+    padding: 0 0 60px;
+  }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .menu-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: border-color 0.2s;
+  }
+
+  .menu-item:hover { border-color: var(--yellow); }
+
+  .menu-item-left { display: flex; align-items: center; gap: 12px; }
+  .menu-emoji { font-size: 24px; }
+  .menu-name { font-size: 14px; font-weight: 500; color: var(--text); }
+  .menu-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .menu-price { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--yellow); }
+
+  /* CTA */
+  .cta {
+    padding: 60px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .cta-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    margin-bottom: 12px;
+  }
+
+  .cta-title span { color: var(--red); }
+
+  .cta-desc {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 28px;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Typing indicator */
+  .typing {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--dark);
+    border: 1px solid var(--border);
+    border-radius: 4px 12px 12px 12px;
+    align-self: flex-start;
+    width: fit-content;
+  }
+
+  .typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: bounce 1.4s infinite;
+  }
+
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  @media (max-width: 768px) {
+    .hero { grid-template-columns: 1fr; gap: 40px; }
+    .hero-title { font-size: 52px; }
+    .features-grid { grid-template-columns: 1fr; }
+    .menu-grid { grid-template-columns: 1fr; }
+    header { flex-direction: column; gap: 12px; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🍔</div>
+      <div>
+        <div class="logo-text">La Burger Perfecta</div>
+        <div class="logo-sub">Asistente Virtual IA</div>
+      </div>
+    </div>
+    <div class="badge">En línea ahora</div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-label">Powered by Inteligencia Artificial</div>
+      <h1 class="hero-title">Tu BURGER<br><span>en segundos</span></h1>
+      <p class="hero-desc">Pedí, consultá el menú y resolvé tus dudas al instante con nuestro asistente inteligente. Disponible las 24 horas.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="openChat()">🍔 Hacer un pedido</button>
+        <button class="btn-secondary" onclick="openChat()">Ver el menú</button>
+      </div>
+    </div>
+
+    <!-- Chat preview window -->
+    <div class="chat-window" id="chatWindow">
+      <div class="chat-header">
+        <div class="chat-avatar">🤖</div>
+        <div class="chat-info">
+          <div class="chat-name">BurgerBot</div>
+          <div class="chat-status">● En línea</div>
+        </div>
+      </div>
+      <div class="chat-messages" id="messages">
+        <div class="msg msg-bot">¡Hola! 👋 Soy <strong>BurgerBot</strong>, tu asistente de La Burger Perfecta. ¿En qué te puedo ayudar hoy? 🍔</div>
+      </div>
+      <div class="chat-input-area">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Escribí tu mensaje..." onkeydown="handleKey(event)"/>
+        <button class="chat-send" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <div class="section-label">¿Por qué BurgerBot?</div>
+    <div class="section-title">Todo lo que necesitás</div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Respuesta instantánea</div>
+        <div class="feature-desc">Sin esperas. El bot responde en segundos a cualquier consulta sobre el menú, precios o disponibilidad.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛒</div>
+        <div class="feature-title">Toma pedidos solo</div>
+        <div class="feature-desc">El bot guía al cliente, arma el pedido completo y muestra el resumen con el total automáticamente.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🕐</div>
+        <div class="feature-title">24/7 sin descanso</div>
+        <div class="feature-desc">Disponible todos los días a cualquier hora. No importa si son las 3am, el bot siempre responde.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Menu -->
+  <section class="menu-section">
+    <div class="section-label">Nuestro menú</div>
+    <div class="section-title">Las mejores burgers</div>
+    <div class="menu-grid">
+      <div class="menu-item">
+        <div class="menu-item-left">
+          <div class="menu-emoji">🍔</div>
+          <div>
+            <div class="menu-name">Clásica</div>
+            <div class="menu-desc">Medallón de res, lechuga, tomate, cheddar</div>
+          </div>
+        </div>
+        <div class="menu-price">$3.500</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left">
+          <div class="menu-emoji">🥓</div>
+          <div>
+            <div class="menu-name">BBQ Bacon</div>
+            <div class="menu-desc">Doble medallón, bacon, salsa BBQ, cebolla</div>
+          </div>
+        </div>
+        <div class="menu-price">$4.200</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left">
+          <div class="menu-emoji">🍗</div>
+          <div>
+            <div class="menu-name">Pollo Crispy</div>
+            <div class="menu-desc">Pechuga apanada, coleslaw, mayo de ajo</div>
+          </div>
+        </div>
+        <div class="menu-price">$3.800</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left">
+          <div class="menu-emoji">🥗</div>
+          <div>
+            <div class="menu-name">Veggie</div>
+            <div class="menu-desc">Medallón de garbanzo, rúcula, hummus</div>
+          </div>
+        </div>
+        <div class="menu-price">$3.200</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <h2 class="cta-title">¿Listo para <span>pedir?</span></h2>
+    <p class="cta-desc">Chateá con BurgerBot y hacé tu pedido en menos de 2 minutos</p>
+    <button class="btn-primary" style="margin: 0 auto; font-size: 15px; padding: 16px 32px;" onclick="openChat()">
+      🍔 Hablar con BurgerBot
+    </button>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <span>© 2026 La Burger Perfecta — Av. Corrientes 1234, CABA</span>
+    <span>Lun–Dom 12hs a 24hs · 11-1234-5678</span>
+  </footer>
+
+</div>
+
+<!-- Full chat overlay -->
+<div id="chatOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:100; align-items:center; justify-content:center;">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:20px; width:420px; max-width:95vw; overflow:hidden; box-shadow:0 40px 80px rgba(0,0,0,0.8);">
+    <div style="background:var(--dark); padding:16px 20px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border);">
+      <div style="width:40px; height:40px; background:var(--red); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;">🤖</div>
+      <div style="flex:1;">
+        <div style="font-size:14px; font-weight:500;">BurgerBot</div>
+        <div style="font-size:12px; color:#4ADE80;">● En línea</div>
+      </div>
+      <button onclick="closeChat()" style="background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; line-height:1;">×</button>
+    </div>
+    <div id="overlayMessages" style="padding:16px; display:flex; flex-direction:column; gap:10px; height:380px; overflow-y:auto;">
+      <div class="msg msg-bot">¡Hola! 👋 Soy <strong>BurgerBot</strong>. ¿Querés ver el menú o hacer un pedido? 🍔</div>
+    </div>
+    <div style="padding:12px 16px; border-top:1px solid var(--border); display:flex; gap:8px;">
+      <input type="text" id="overlayInput" class="chat-input" placeholder="Escribí tu mensaje..." onkeydown="handleOverlayKey(event)" style="flex:1;"/>
+      <button class="chat-send" onclick="sendOverlayMessage()">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const WEBHOOK_URL = 'http://localhost:5678/webhook/50b77167-7a5a-445a-a609-38b9191c0623/chat';
+const SESSION_ID = 'demo-' + Math.random().toString(36).substr(2, 9);
+
+function openChat() {
+  document.getElementById('chatOverlay').style.display = 'flex';
+  document.getElementById('overlayInput').focus();
+}
+
+function closeChat() {
+  document.getElementById('chatOverlay').style.display = 'none';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter') sendMessage();
+}
+
+function handleOverlayKey(e) {
+  if (e.key === 'Enter') sendOverlayMessage();
+}
+
+function addMsg(container, text, isUser) {
+  const msg = document.createElement('div');
+  msg.className = 'msg ' + (isUser ? 'msg-user' : 'msg-bot');
+  msg.innerHTML = text;
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+  return msg;
+}
+
+function addTyping(container) {
+  const t = document.createElement('div');
+  t.className = 'typing';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  t.id = 'typing-' + Date.now();
+  container.appendChild(t);
+  container.scrollTop = container.scrollHeight;
+  return t;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const messages = document.getElementById('messages');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addMsg(messages, text, true);
+  const typing = addTyping(messages);
+  try {
+    const res = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chatInput: text, sessionId: SESSION_ID })
+    });
+    const data = await res.json();
+    typing.remove();
+    const reply = data.output || data.message || 'Lo siento, no pude procesar tu mensaje.';
+    addMsg(messages, reply, false);
+  } catch {
+    typing.remove();
+    addMsg(messages, '⚠️ Error de conexión. Asegurate de que n8n esté corriendo.', false);
+  }
+}
+
+async function sendOverlayMessage() {
+  const input = document.getElementById('overlayInput');
+  const messages = document.getElementById('overlayMessages');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addMsg(messages, text, true);
+  const typing = addTyping(messages);
+  try {
+    const res = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chatInput: text, sessionId: SESSION_ID })
+    });
+    const data = await res.json();
+    typing.remove();
+    const reply = data.output || data.message || 'Lo siento, no pude procesar tu mensaje.';
+    addMsg(messages, reply, false);
+  } catch {
+    typing.remove();
+    addMsg(messages, '⚠️ Error de conexión. Asegurate de que n8n esté corriendo.', false);
+  }
+}
+
+// Close overlay clicking outside
+document.getElementById('chatOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeChat();
+});
+</script>
+
+</body>
+</html>
